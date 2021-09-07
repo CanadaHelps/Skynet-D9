@@ -1,0 +1,5 @@
+name: 'DMS Instance'
+type: module
+description: 'CanadaHelps DMS instance module'
+core_version_requirement: ^8 || ^9
+package: 'CanadaHelps'

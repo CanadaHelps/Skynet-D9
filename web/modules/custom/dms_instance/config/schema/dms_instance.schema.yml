@@ -1,0 +1,12 @@
+dms_instance.settings:
+  label: 'DMS Instance Settings'
+  type: config_object
+  mapping:
+    instance_statuses:
+      type: sequence
+      label: 'Instance Statuses'
+      mapping:
+        id:
+          type: integer
+        label:
+          type: string

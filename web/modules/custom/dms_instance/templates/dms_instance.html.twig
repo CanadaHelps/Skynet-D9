@@ -1,0 +1,22 @@
+{#
+/**
+ * @file dms_instance.html.twig
+ * Default theme implementation to present DMS Instance data.
+ *
+ * This template is used when viewing DMS Instance pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_dms_instance()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('dms_instance') }}>
+  {% if content %}
+    {{- content -}}
+  {% endif %}
+</div>

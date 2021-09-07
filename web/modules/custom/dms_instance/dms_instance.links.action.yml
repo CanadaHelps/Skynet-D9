@@ -1,0 +1,5 @@
+entity.dms_instance.add_form:
+  route_name: entity.dms_instance.add_form
+  title: 'Add DMS Instance'
+  appears_on:
+    - entity.dms_instance.collection

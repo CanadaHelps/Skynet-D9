@@ -1,0 +1,19 @@
+# DMS Instance menu items definition
+entity.dms_instance.collection:
+  title: 'DMS Instance list'
+  route_name: entity.dms_instance.collection
+  description: 'List DMS Instance entities'
+  parent: system.admin_structure
+  weight: 100
+
+dms_instance.admin.structure.settings:
+  title: 'DMS Instance settings'
+  description: 'Configure DMS Instance entities'
+  route_name: dms_instance.settings
+  parent: system.admin_structure
+dms_instance.dms_instance_settings_form:
+  title: 'SettingsForm'
+  route_name: dms_instance.dms_instance_settings_form
+  description: 'A description for the menu entry'
+  parent: system.admin_config_system
+  weight: 99

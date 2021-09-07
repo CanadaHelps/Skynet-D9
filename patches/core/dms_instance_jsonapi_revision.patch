@@ -1,0 +1,12 @@
+--- modules/jsonapi/src/Controller/EntityResource.php  2021-07-20 17:42:48.000000000 -0400
++++ modules/jsonapi/src/Controller/EntityResource.php      2021-07-28 04:28:32.838836763 -0400
+@@ -342,6 +342,9 @@
+
+     // Set revision data details for revisionable entities.
+     if ($entity->getEntityType()->isRevisionable()) {
++      if ($entity->getEntityTypeId() === 'dms_instance') {
++        $entity->setNewRevision(TRUE);
++      }
+       if ($bundle_entity_type = $entity->getEntityType()->getBundleEntityType()) {
+         $bundle_entity = $this->entityTypeManager->getStorage($bundle_entity_type)->load($entity->bundle());
+         if ($bundle_entity instanceof RevisionableEntityBundleInterface) {

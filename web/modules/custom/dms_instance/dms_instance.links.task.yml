@@ -1,0 +1,26 @@
+# DMS Instance routing definition
+dms_instance.settings_tab:
+  route_name: dms_instance.settings
+  title: 'Settings'
+  base_route: dms_instance.settings
+
+entity.dms_instance.canonical:
+  route_name: entity.dms_instance.canonical
+  base_route: entity.dms_instance.canonical
+  title: 'View'
+
+entity.dms_instance.edit_form:
+  route_name: entity.dms_instance.edit_form
+  base_route: entity.dms_instance.canonical
+  title: 'Edit'
+
+entity.dms_instance.delete_form:
+  route_name:  entity.dms_instance.delete_form
+  base_route:  entity.dms_instance.canonical
+  title: Delete
+  weight: 10
+
+entity.dms_instance.version_history:
+  route_name: entity.dms_instance.version_history
+  base_route: entity.dms_instance.canonical
+  title: 'Revisions'

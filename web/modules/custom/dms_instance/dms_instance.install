@@ -1,0 +1,149 @@
+<?php
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Add in aegir_instance column for dms_instance
+ */
+function dms_instance_update_9101() {
+  $field_storage_definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+    ->setLabel(t('Aegir instance'))
+    ->setDescription(t('Full domain name of the aegir instance'))
+    ->setRequired(TRUE)
+    ->setStorageRequired(TRUE)
+    ->setSettings([
+      'default_value' => 'aegir.canadahelps.org',
+      'max_length' => 255,
+    ])
+    ->setDisplayOptions('view', [
+      'label' => 'hidden',
+      'type' => 'text_default',
+      'weight' => 0,
+    ])
+    ->setDisplayOptions('form', [
+       'type' => 'string_textfield',
+       'weight' => 0,
+    ]);
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('aegir_instance', 'dms_instance', 'dms_instance', $field_storage_definition);
+}
+
+/**
+ * Alter certain columns to be not required
+ */
+function dms_instance_update_9102() {
+  $bundle_of = 'dms_instance';
+  $definition_manager = \Drupal::entityDefinitionUpdateManager(); 
+  $fieldsToUpdate = ['email_address', 'email_name', 'email_password', 'smtp_service'];
+  foreach ($fieldsToUpdate as $field_name) {
+    $field_storage_definition = $definition_manager->getFieldStorageDefinition($field_name, $bundle_of);
+    $field_storage_definition->setRequired(FALSE);
+    $definition_manager->updateFieldStorageDefinition($field_storage_definition);
+  }
+}
+
+/**
+ * Add in columns to make the instance revisionable
+ */
+function dms_instance_update_9103(&$sandbox) {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = $definition_update_manager->getEntityType('dms_instance');
+  $entity_keys = $entity_type->getKeys();
+  $entity_keys['revision'] = 'revision_id';
+  $entity_type->set('entity_keys', $entity_keys);
+  $entity_type->set('revision_table', 'dms_instance_revision');
+  $entity_type->set('revision_data_table', 'dms_instance_field_data_revision');
+  $revision_metadata_keys = [
+    'revision_default' => 'revision_default',
+    'revision_user' => 'revision_user',
+    'revision_created' => 'revision_created',
+    'revision_log_message' => 'revision_log_message'
+  ];
+  $entity_type->set('revision_metadata_keys', $revision_metadata_keys);
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions('dms_instance');
+  $field_storage_definitions['revision_id'] = BaseFieldDefinition::create('integer')
+  ->setName('revision_id')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Revision ID'))
+  ->setReadOnly(TRUE)
+  ->setSetting('unsigned', TRUE);
+
+$field_storage_definitions['revision_default'] = BaseFieldDefinition::create('boolean')
+  ->setName('revision_default')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Default revision'))
+  ->setDescription(new TranslatableMarkup('A flag indicating whether this was a default revision when it was saved.'))
+  ->setStorageRequired(TRUE)
+  ->setInternal(TRUE)
+  ->setTranslatable(FALSE)
+  ->setRevisionable(TRUE);
+
+$field_storage_definitions['revision_translation_affected'] = BaseFieldDefinition::create('boolean')
+  ->setName('revision_translation_affected')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Revision translation affected'))
+  ->setDescription(new TranslatableMarkup('Indicates if the last edit of a translation belongs to current revision.'))
+  ->setReadOnly(TRUE)
+  ->setRevisionable(TRUE)
+  ->setTranslatable(TRUE);
+
+$field_storage_definitions['revision_created'] = BaseFieldDefinition::create('created')
+  ->setName('revision_created')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Revision create time'))
+  ->setDescription(new TranslatableMarkup('The time that the current revision was created.'))
+  ->setRevisionable(TRUE);
+$field_storage_definitions['revision_user'] = BaseFieldDefinition::create('entity_reference')
+  ->setName('revision_user')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Revision user'))
+  ->setDescription(new TranslatableMarkup('The user ID of the author of the current revision.'))
+  ->setSetting('target_type', 'user')
+  ->setRevisionable(TRUE);
+$field_storage_definitions['revision_log_message'] = BaseFieldDefinition::create('string_long')
+  ->setName('revision_log_message')
+  ->setTargetEntityTypeId('dms_instance')
+  ->setTargetBundle(NULL)
+  ->setLabel(new TranslatableMarkup('Revision log message'))
+  ->setDescription(new TranslatableMarkup('Briefly describe the changes you have made.'))
+  ->setRevisionable(TRUE)
+  ->setDefaultValue('');
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+}
+
+/**
+ * Make instance status revisionable and also work with a function callback as the set of allowable values
+ */
+function dms_instance_update_9104(&$sandbox) {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $last_installed_schema_repository */
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions('dms_instance');
+  $entity_type = $definition_update_manager->getEntityType('dms_instance');
+  $field_storage_definitions['instance_status']->setSettings(['allowed_values' => [], 'allowed_values_function' => 'dms_instance_allowed_values_function']);
+  $field_storage_definitions['instance_status']->setRevisionable(TRUE);
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+}
+
+function dms_instance_update_9105() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = $definition_update_manager->getEntityType('dms_instance');
+  \Drupal::entityDefinitionUpdateManager()->updateEntityType($entity_type);
+}
+
+function dms_instance_update_9106(&$sandbox) {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  /** @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $last_installed_schema_repository */
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions('dms_instance');
+  $field_storage_definitions['langcode']->setRevisionable(TRUE);
+  $entity_type = $definition_update_manager->getEntityType('dms_instance');
+  $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+}

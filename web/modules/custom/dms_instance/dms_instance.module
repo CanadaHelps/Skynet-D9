@@ -1,0 +1,150 @@
+<?php
+
+/**
+ * @file
+ * Contains dms_instance.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Database\Database;
+use Drupal\dms_instance\Queue\DMSInstanceQueue;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+
+/**
+ * Implements hook_help().
+ */
+function dms_instance_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the dms_instance module.
+    case 'help.page.dms_instance':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('CanadaHelps DMS instance module') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+function dms_instance_jsonapi_entity_filter_access(\Drupal\Core\Entity\EntityTypeInterface $entity_type, \Drupal\Core\Session\AccountInterface $account) {
+
+  // For every entity type that has an admin permission, allow access to filter
+  // by all entities of that type to users with that permission.
+  if ($admin_permission = TRUE) {
+    return [
+      JSONAPI_FILTER_AMONG_ALL => AccessResult::allowedIfHasPermission($account, $admin_permission),
+    ];
+  }
+}
+
+
+function dms_instance_dms_instance_update(EntityInterface $entity) {
+  dms_instance_insert_update($entity);
+}
+
+function dms_instance_dms_instance_insert(EntityInterface $entity) {
+  dms_instance_insert_update($entity);
+}
+
+function dms_instance_insert_update(EntityInterface $entity) {
+  $module_handler = \Drupal::service('module_handler');
+  $module_path = $module_handler->getModule('dms_instance')->getPath();
+  require_once($module_path . DIRECTORY_SEPARATOR . 'dms_instance_secrets.inc');
+  $instanceStatus = $entity->get('instance_status')->value;
+  if ($instanceStatus == 16) {
+    $uuid = $entity->uuid();
+    /** @var Drupal\dms_instance\Queue\DMSInstanceQueue; $queue */
+    $queue = new DMSInstanceQueue($entity->getAegirInstance(), Database::getConnection());
+    $queue->createQueue();
+    $queue->createItem([
+      'url' => $entity->getName() . '-dms.' . SITE_DOMAIN_HOST,
+      'dms_instance_id' => $uuid,
+      'aegir_instance' => $entity->getAegirInstance(),
+    ]);
+  }
+}
+
+function aegirInstances() {
+  return [
+    'aegir.canadahelps.org',
+    'aegir2.canadahelps.org',
+    'b2.jmaconsulting.biz',
+    'b6.jmaconsulting.biz',
+  ];
+}
+
+function dms_instance_cron() {
+  foreach (aegirInstances() as $aegirInstance) {
+    $queue = new DMSInstanceQueue($aegirInstance, Database::getConnection());
+    /** @var Drupal\dms_instance\Queue\DMSInstanceQueue; $queue */
+    $queue->createQueue();
+    $count = Database::getConnection()->query('SELECT COUNT(item_id) as count FROM {queue} WHERE [name] = :name AND [expire] != 0', [':name' => $aegirInstance])->fetchField();
+    // Do not process any more objects if there are already ones in process.
+    if ($count) {
+      continue;
+    }
+    $item = $queue->claimItem(600);
+    if (empty($item->item_id)) {
+      continue;
+    }      
+    $item->data['item_id'] = $item->item_id;
+    try {
+      $request = \Drupal::httpClient()->request('post', 'https://' . $item->data['aegir_instance'] . '/canadahelps/api/site', [
+        'form_params' => $item->data,
+        'timeout' => 10,
+      ]);
+      $contents = $request->getBody()->getContents();
+      $contents = json_decode($contents, TRUE);
+      if ($contents['status'] == 'error') {
+        $dms_instances = \Drupal::entityTypeManager()->getStorage('dms_instance')->loadByProperties(['uuid' => $item->data['dms_instance_id']]);
+        reset($dms_instances); 
+        /** @var \Drupal\dms_instance\Entity $dms_instance */
+        $dms_instance = array_values($dms_instances)[0];
+        if (!empty($dms_instance)) {
+          // Set DMS status to error on provisioning and also delete the queue item so we don't get blocked.
+          $dms_instance->instance_status = 21;
+          if (strpos($contents['message'], 'max capacity') !== FALSE) {
+            $dms_instance->instance_status = 22;
+          }
+          if ($contents['message'] == 'The site already exists.') {
+            $dms_instance->instance_status = 24;
+          }
+          $dms_instance->setNewRevision();
+          $dms_instance->save();
+        }
+        $queue->deleteItem($item);
+      }
+      \Drupal::logger('dms_instance')->debug('%body L121', ['%body' => var_export($contents, TRUE)]);
+    }
+    catch (\Exception $e) {
+      $dms_instances = \Drupal::entityTypeManager()->getStorage('dms_instance')->loadByProperties(['uuid' => $item->data['dms_instance_id']]);
+      reset($dms_instances); 
+      /** @var \Drupal\dms_instance\Entity $dms_instance */
+      $dms_instance = array_values($dms_instances)[0];
+      \Drupal::logger('dms_instance')->debug('%instance %data', ['%instance' => var_export($dms_instance, TRUE), '%data' => var_export($item->data, TRUE)]);
+      if (!empty($dms_instance)) {
+        // Set DMS status to error on provisioning and also delete the queue item so we don't get blocked.
+        $dms_instance->instance_status = 23;
+        $dms_instance->setNewRevision();
+        $dms_instance->save();
+      }
+      $queue->deleteItem($item);
+      \Drupal::logger('dms_instance')->debug($e->getMessage() . '%item', ['%item' => var_export($item, TRUE)]);
+    }
+  }
+}
+
+function dms_instance_allowed_values_function(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, $cacheable) {
+  $config = \Drupal::config('dms_instance.settings');
+  $instance_statues = $config->get('instance_statuses');
+  $instance_statues_saved = explode("\n", $instance_statues);
+  $statuses = [];
+  foreach ($instance_statues_saved as $instanceStatus) {
+    $status = explode(' | ', $instanceStatus);
+    $statuses[$status[0]] = $status[1];
+  }
+  return $statuses;
+}
