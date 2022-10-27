@@ -72,6 +72,7 @@ function aegirInstances() {
     'aegir.canadahelps.org',
     'aegir2.canadahelps.org',
     'aegir3.canadahelps.org',
+    'aegir4.canadahelps.org',
     'b2.jmaconsulting.biz',
     'b6.jmaconsulting.biz',
   ];
