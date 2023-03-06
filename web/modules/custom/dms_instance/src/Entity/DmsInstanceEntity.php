@@ -252,6 +252,7 @@ class DmsInstanceEntity extends EditorialContentEntityBase implements DmsInstanc
     ]);
     $fields['business_registration_number'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Business Registration Number'))
+      ->setDescription(t('Business Registration Number'))
       ->setRequired(TRUE)
       ->setStorageRequired(TRUE)
       ->setSettings([
@@ -268,6 +269,7 @@ class DmsInstanceEntity extends EditorialContentEntityBase implements DmsInstanc
       ]);
     $fields['sync_days'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Sync days'))
+      ->setDescription(t('Sync days'))
       ->setRequired(TRUE)
       ->setStorageRequired(TRUE)
       ->setSetting('unsigned', TRUE);
