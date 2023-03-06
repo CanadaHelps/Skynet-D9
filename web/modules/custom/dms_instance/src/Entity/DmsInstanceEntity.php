@@ -250,6 +250,29 @@ class DmsInstanceEntity extends EditorialContentEntityBase implements DmsInstanc
       'type' => 'string_textfield',
       'weight' => 0,
     ]);
+    $fields['business_registration_number'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Business Registration Number'))
+      ->setDescription(t('Business Registration Number'))
+      ->setRequired(TRUE)
+      ->setStorageRequired(TRUE)
+      ->setSettings([
+        'default_value' => '',
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'text_default',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ]);
+    $fields['sync_days'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Sync days'))
+      ->setDescription(t('Sync days'))
+      ->setRequired(TRUE)
+      ->setStorageRequired(TRUE)
+      ->setSetting('unsigned', TRUE);
   $fields['email_name'] = BaseFieldDefinition::create('string')
     ->setLabel(t('DMS Email Address username'))
     ->setDescription(t('User name to login to the DMS Email inbox'))
