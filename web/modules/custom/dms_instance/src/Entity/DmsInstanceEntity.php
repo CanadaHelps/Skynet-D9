@@ -529,6 +529,21 @@ class DmsInstanceEntity extends EditorialContentEntityBase implements DmsInstanc
       ->setDescription(t('Briefly describe the changes you have made.'))
       ->setRevisionable(TRUE)
       ->setDefaultValue('');
+    $fields['imap_provider'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('IMAP Provider'))
+      ->setDescription(t('Mail IMAP Provider eg, GMail, HotMail, etc.'))
+      ->setStorageRequired(TRUE)
+      ->setSettings([
+        'max_length' => 255,
+      ])
+      ->setDisplayOptions('view', [
+        'type' => 'text_default',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ]);
     return $fields;
   }
 
