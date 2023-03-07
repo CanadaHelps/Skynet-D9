@@ -34,7 +34,7 @@ function dms_instance_update_9101() {
  */
 function dms_instance_update_9102() {
   $bundle_of = 'dms_instance';
-  $definition_manager = \Drupal::entityDefinitionUpdateManager();
+  $definition_manager = \Drupal::entityDefinitionUpdateManager(); 
   $fieldsToUpdate = ['email_address', 'email_name', 'email_password', 'smtp_service'];
   foreach ($fieldsToUpdate as $field_name) {
     $field_storage_definition = $definition_manager->getFieldStorageDefinition($field_name, $bundle_of);
@@ -146,10 +146,4 @@ function dms_instance_update_9106(&$sandbox) {
   $field_storage_definitions['langcode']->setRevisionable(TRUE);
   $entity_type = $definition_update_manager->getEntityType('dms_instance');
   $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
-}
-
-function dms_instance_update_9110() {
-  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
-  $entity_type = $definition_update_manager->getEntityType('dms_instance');
-  \Drupal::entityDefinitionUpdateManager()->updateEntityType($entity_type);
 }
