@@ -34,7 +34,7 @@ function dms_instance_update_9101() {
  */
 function dms_instance_update_9102() {
   $bundle_of = 'dms_instance';
-  $definition_manager = \Drupal::entityDefinitionUpdateManager(); 
+  $definition_manager = \Drupal::entityDefinitionUpdateManager();
   $fieldsToUpdate = ['email_address', 'email_name', 'email_password', 'smtp_service'];
   foreach ($fieldsToUpdate as $field_name) {
     $field_storage_definition = $definition_manager->getFieldStorageDefinition($field_name, $bundle_of);
@@ -146,4 +146,75 @@ function dms_instance_update_9106(&$sandbox) {
   $field_storage_definitions['langcode']->setRevisionable(TRUE);
   $entity_type = $definition_update_manager->getEntityType('dms_instance');
   $definition_update_manager->updateFieldableEntityType($entity_type, $field_storage_definitions, $sandbox);
+}
+
+/**
+ * Add in imap_provider column for dms_instance
+ */
+function dms_instance_update_9107() {
+  $field_storage_definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+    ->setLabel(t('IMAP Provider'))
+    ->setDescription(t('Mail IMAP Provider eg, GMail, HotMail, etc.'))
+    ->setStorageRequired(TRUE)
+    ->setSettings([
+      'max_length' => 255,
+    ])
+    ->setDisplayOptions('view', [
+      'type' => 'text_default',
+      'weight' => 0,
+    ])
+    ->setDisplayOptions('form', [
+      'type' => 'string_textfield',
+      'weight' => 0,
+    ]);
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('imap_provider', 'dms_instance', 'dms_instance', $field_storage_definition);
+}
+
+function dms_instance_update_9108() {
+  $field_storage_definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+    ->setLabel(t('Sync days'))
+    ->setRequired(TRUE)
+    ->setStorageRequired(TRUE)
+    ->setSetting('unsigned', TRUE);
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('sync_days', 'dms_instance', 'dms_instance', $field_storage_definition);
+
+  $field_storage_definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+    ->setLabel(t('Business Registration Number'))
+    ->setRequired(TRUE)
+    ->setStorageRequired(TRUE)
+    ->setSettings([
+      'default_value' => '',
+      'max_length' => 255,
+    ])
+    ->setDisplayOptions('view', [
+      'type' => 'text_default',
+      'weight' => 0,
+    ])
+    ->setDisplayOptions('form', [
+      'type' => 'string_textfield',
+      'weight' => 0,
+    ]);
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('business_registration_number', 'dms_instance', 'dms_instance', $field_storage_definition);
+}
+
+function dms_instance_update_9109() {
+  $last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+  $field_storage_definitions = $last_installed_schema_repository->getLastInstalledFieldStorageDefinitions('dms_instance');
+  \Drupal::entityDefinitionUpdateManager()
+    ->uninstallFieldStorageDefinition($field_storage_definitions['sync_days']);
+
+  $field_storage_definition = \Drupal\Core\Field\BaseFieldDefinition::create('integer')
+    ->setLabel(t('Sync days'))
+    ->setRequired(TRUE)
+    ->setStorageRequired(TRUE)
+    ->setSetting('unsigned', TRUE);
+
+  \Drupal::entityDefinitionUpdateManager()
+    ->installFieldStorageDefinition('sync_days', 'dms_instance', 'dms_instance', $field_storage_definition);
 }
