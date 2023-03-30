@@ -26,8 +26,10 @@ class ItemProcess extends ControllerBase {
     $queue->deleteItem($item);
 
     $httpClient = \Drupal::httpClient();
+    $config = \Drupal::config('settings');
+    $ch_end_point = $config->get('ch_end_point');
     $httpClient->post(
-      'https://beta.canadahelps.com/site/api/dms/resgister-dms',
+      $ch_end_point,
       [
         'BusinessNumber' => $dms_instance->business_registration_number,
         'APIHostURL' => 'https://'.$dms_instance->instance_prefix.".canadahelps.org",
@@ -37,7 +39,7 @@ class ItemProcess extends ControllerBase {
         'InitialLoadDays' => $dms_instance->sync_days,
       ]
     );
-    
+
     return new JsonResponse([
       'data' => ['item deleted ' . $item_id],
       'method' => 'GET',
