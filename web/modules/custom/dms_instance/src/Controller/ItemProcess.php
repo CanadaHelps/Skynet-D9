@@ -24,6 +24,22 @@ class ItemProcess extends ControllerBase {
     $item = new \stdClass();
     $item->item_id = $item_id;
     $queue->deleteItem($item);
+
+    $httpClient = \Drupal::httpClient();
+    $config = \Drupal::config('settings');
+    $ch_end_point = $config->get('ch_end_point');
+    $httpClient->post(
+      $ch_end_point,
+      [
+        'BusinessNumber' => $dms_instance->business_registration_number,
+        'APIHostURL' => 'https://'.$dms_instance->instance_prefix.".canadahelps.org",
+        'RedirectURL' => 'https://'.$dms_instance->instance_prefix.".canadahelps.org",
+        'APIKey' => $dms_instance->civicrm_api_key,
+        'Key' => $dms_instance->civicrm_site_key,
+        'InitialLoadDays' => $dms_instance->sync_days,
+      ]
+    );
+
     return new JsonResponse([
       'data' => ['item deleted ' . $item_id],
       'method' => 'GET',
