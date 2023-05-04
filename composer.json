@@ -13,23 +13,24 @@
             "type": "composer",
             "url": "https://packages.drupal.org/8"
         },
-	{
-	    "type": "vcs",
-	    "url": "https://github.com/JMAConsulting/dms_instance.git"
-	}
+    {
+        "type": "vcs",
+        "url": "https://github.com/JMAConsulting/dms_instance.git"
+    }
 
     ],
     "require": {
+        "canadahelps/dms_instance": "1.0",
         "composer/installers": "^1.9",
-	"cweagans/composer-patches": "^1.0",
+        "cweagans/composer-patches": "^1.0",
+        "drupal/core": "^9.1",
         "drupal/core-composer-scaffold": "^9.1",
         "drupal/core-project-message": "^9.1",
         "drupal/core-recommended": "^9.1",
-	"drupal/core": "^9.1",
-	"drupal/jsonapi_extras": "^3",
-        "drupal/simple_oauth": "^4",
-	"canadahelps/dms_instance": "1.0",
-	"drupal/jsonapi_explorer": "^1"
+        "drupal/jsonapi_explorer": "^1",
+        "drupal/jsonapi_extras": "^3",
+        "drupal/key": "^1.17",
+        "drupal/simple_oauth": "^4"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -37,7 +38,13 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/installers": true,
+            "cweagans/composer-patches": true,
+            "drupal/core-composer-scaffold": true,
+            "drupal/core-project-message": true
+        }
     },
     "extra": {
         "drupal-scaffold": {
@@ -95,9 +102,9 @@
                 "      composer remove drupal/core-project-message"
             ]
         },
-	"patches": {
-		"drupal/core": {
-			"Apply patch to ensure that dms_instance json_api patches create new revisions": "./patches/core/dms_instance_jsonapi_revision.patch"
+    "patches": {
+        "drupal/core": {
+            "Apply patch to ensure that dms_instance json_api patches create new revisions": "./patches/core/dms_instance_jsonapi_revision.patch"
                 }
         }
     }

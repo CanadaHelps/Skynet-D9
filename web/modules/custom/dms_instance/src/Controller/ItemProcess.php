@@ -17,6 +17,7 @@ class ItemProcess extends ControllerBase {
     $dms_instance = \Drupal::entityTypeManager()->getStorage('dms_instance')->loadByProperties(['uuid' => $dms_instance_id]);
     reset($dms_instance);
     $dms_instance = array_values($dms_instance)[0];
+    $dms_instance->civicrm_site_key =  \Drupal::request()->query->get('site_key');
     $dms_instance->instance_status = 17;
     $dms_instance->setNewRevision();
     $dms_instance->save();
@@ -26,16 +27,15 @@ class ItemProcess extends ControllerBase {
     $queue->deleteItem($item);
 
     $httpClient = \Drupal::httpClient();
-    $config = \Drupal::config('settings');
-    $ch_end_point = $config->get('ch_end_point');
+    $ch_end_point = \Drupal::service('key.repository')->getKey('ch_end_point')->getKeyValue();
     $httpClient->post(
       $ch_end_point,
       [
         'BusinessNumber' => $dms_instance->business_registration_number,
-        'APIHostURL' => 'https://'.$dms_instance->instance_prefix.".canadahelps.org",
-        'RedirectURL' => 'https://'.$dms_instance->instance_prefix.".canadahelps.org",
-        'APIKey' => $dms_instance->civicrm_api_key,
+        'APIHostURL' => 'https://'.$dms_instance->get('instance_prefix')->getString().".canadahelps.org",
+        'RedirectURL' => 'https://'.$dms_instance->get('instance_prefix')->getString().".canadahelps.org",
         'Key' => $dms_instance->civicrm_site_key,
+        'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
         'InitialLoadDays' => $dms_instance->sync_days,
       ]
     );
