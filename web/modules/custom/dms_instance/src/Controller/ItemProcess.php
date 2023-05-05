@@ -29,17 +29,23 @@ class ItemProcess extends ControllerBase {
 
     $httpClient = \Drupal::httpClient();
     $ch_end_point = \Drupal::service('key.repository')->getKey('ch_end_point')->getKeyValue();
-    $httpClient->post(
-      $ch_end_point,
-      [
-        'BusinessNumber' => $dms_instance->business_registration_number,
-        'APIHostURL' => 'https://'.$dms_instance->get('instance_prefix')->getString()."-dms.canadahelps.org",
-        'RedirectURL' => 'https://'.$dms_instance->get('instance_prefix')->getString()."-dms.canadahelps.org",
-        'Key' => $civicrm_site_key,
-        'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
-        'InitialLoadDays' => $dms_instance->sync_days,
+
+    $body = [
+      'BusinessNumber' => $dms_instance->get('business_registration_number')->getString(),
+      'APIHostURL' => 'https://'.$dms_instance->get('instance_prefix')->getString()."-dms.canadahelps.org",
+      'RedirectURL' => 'https://'.$dms_instance->get('instance_prefix')->getString()."-dms.canadahelps.org",
+      'Key' => $civicrm_site_key,
+      'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
+      'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
+    ];
+    $response = $httpClient->post(
+      $ch_end_point, [
+      'body' => json_encode($data),
+      'headers' => [
+        'Accept' => 'application/json', 
+        'Content-Type' => 'application/json'
       ]
-    );
+    ]);
 
     return new JsonResponse([
       'data' => ['item deleted ' . $item_id],
