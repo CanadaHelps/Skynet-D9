@@ -40,9 +40,9 @@ class ItemProcess extends ControllerBase {
     ];
     $response = $httpClient->post(
       $ch_end_point, [
-      'body' => json_encode($data),
+      'body' => json_encode($body),
       'headers' => [
-        'Accept' => 'application/json', 
+        'Accept' => 'application/json',
         'Content-Type' => 'application/json'
       ]
     ]);
