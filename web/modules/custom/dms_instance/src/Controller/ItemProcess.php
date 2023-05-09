@@ -38,14 +38,22 @@ class ItemProcess extends ControllerBase {
       'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
       'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
     ];
-    $response = $httpClient->post(
-      $ch_end_point, [
-      'body' => json_encode($body),
-      'headers' => [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json'
-      ]
-    ]);
+    try {
+      $httpClient->post(
+        $ch_end_point, [
+        'body' => json_encode($body),
+        'headers' => [
+          'Accept' => 'application/json',
+          'Content-Type' => 'application/json'
+        ]
+      ]);
+    }
+    catch (\GuzzleHttp\Exception\BadResponseException $e) {
+      // ID 26: CH-Data Sync failed. We would get Internal Error 500 from the server
+      $dms_instance->instance_status = 26;
+      $dms_instance->setNewRevision();
+      $dms_instance->save();
+    }
 
     return new JsonResponse([
       'data' => ['item deleted ' . $item_id],
