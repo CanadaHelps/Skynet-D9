@@ -39,7 +39,7 @@ class ItemProcess extends ControllerBase {
       'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
     ];
     try {
-      $httpClient->post(
+      $response = $httpClient->post(
         $ch_end_point, [
         'body' => json_encode($body),
         'headers' => [
@@ -47,6 +47,12 @@ class ItemProcess extends ControllerBase {
           'Content-Type' => 'application/json'
         ]
       ]);
+      if(!$reponse) {
+        // ID 26: CH-Data Sync failed. We would get Internal Error 500 from the server
+        $dms_instance->instance_status = 26;
+        $dms_instance->setNewRevision();
+        $dms_instance->save();
+      }
     }
     catch (\GuzzleHttp\Exception\BadResponseException $e) {
       // ID 26: CH-Data Sync failed. We would get Internal Error 500 from the server
