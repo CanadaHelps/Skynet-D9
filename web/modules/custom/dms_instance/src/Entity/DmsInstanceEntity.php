@@ -239,7 +239,7 @@ class DmsInstanceEntity extends EditorialContentEntityBase implements DmsInstanc
     ->setStorageRequired(TRUE)
     ->setSettings([
       'default_value' => '',
-      'max_length' => 40,
+      'max_length' => 100,
     ])
     ->setDisplayOptions('view', [
       'label' => 'hidden',
