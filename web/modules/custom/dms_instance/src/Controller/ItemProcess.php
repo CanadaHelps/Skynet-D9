@@ -47,7 +47,8 @@ class ItemProcess extends ControllerBase {
           'Content-Type' => 'application/json'
         ]
       ]);
-      if(!$response->getBody()->getContents()) {
+      $ch_response = $response->getBody()->getContents();
+      if($ch_response == false || $ch_response == 0 || $ch_response == 'fail') {
         // ID 26: CH-Data Sync failed. We would get Internal Error 500 from the server
         $dms_instance->instance_status = 26;
         $dms_instance->setNewRevision();
