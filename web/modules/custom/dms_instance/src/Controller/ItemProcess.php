@@ -48,13 +48,13 @@ class ItemProcess extends ControllerBase {
         ]
       ]);
       $ch_response = $response->getBody()->getContents();
-      if($ch_response == false || $ch_response == 0 || $ch_response == 'fail') {
+      if($ch_response === 'false') {
         // ID 26: CH-Data Sync failed. We would get boolean false from the server
         $dms_instance->instance_status = 26;
         $dms_instance->setNewRevision();
         $dms_instance->save();
       }
-      if($ch_response == true || $ch_response == 1 || $ch_response == 'true') {
+      if($ch_response === 'true') {
         // ID 27: CH-Data Sync Started. We would get boolean true from the server
         $dms_instance->instance_status = 27;
         $dms_instance->setNewRevision();
