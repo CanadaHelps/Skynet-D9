@@ -26,7 +26,7 @@ class ItemProcess extends ControllerBase {
      * 19 - Config Pushed to Instance
      * 27 - CH Data Sync Started
     **/
-    $ignored_status = [18, 19, 27];
+    $ignored_status = [17, 18, 19, 27];
     if(!in_array($previous_status, $ignored_status)) {
       $dms_instance->instance_status = 17;
       $dms_instance->setNewRevision();
