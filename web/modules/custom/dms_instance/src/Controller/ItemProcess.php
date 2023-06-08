@@ -30,8 +30,8 @@ class ItemProcess extends ControllerBase {
     if(!in_array($previous_status, $ignored_status)) {
       $dms_instance->instance_status = 17;
       $dms_instance->setNewRevision();
-      $dms_instance->save();
     }
+    $dms_instance->save();
     $queue = new DMSInstanceQueue($aegir_instance, Database::getConnection());
     $item = new \stdClass();
     $item->item_id = $item_id;
@@ -58,6 +58,7 @@ class ItemProcess extends ControllerBase {
       }
     }
     //check for previous status
+    $ignored_status = [18, 19, 27];
     if(in_array($previous_status, $ignored_status)) {
       return new JsonResponse([
         'data' => ['item deleted ' . $item_id],
