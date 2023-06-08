@@ -38,6 +38,11 @@ class ItemProcess extends ControllerBase {
       'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
       'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
     ];
+    foreach($body as $bodyParams) {
+      if(empty($bodyParams) || $bodyParams == NULL)
+        return true;
+      }
+    }
     try {
       $response = $httpClient->post(
         $ch_end_point, [
