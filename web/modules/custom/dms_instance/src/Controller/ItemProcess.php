@@ -19,9 +19,19 @@ class ItemProcess extends ControllerBase {
     $dms_instance = array_values($dms_instance)[0];
     $civicrm_site_key = \Drupal::request()->query->get('site_key');
     $dms_instance->civicrm_site_key = $civicrm_site_key;
-    $dms_instance->instance_status = 17;
-    $dms_instance->setNewRevision();
-    $dms_instance->save();
+    $previous_status = $dms_instance->get('instance_status')->getString();
+    /**
+     * These are the stauses not to be changed
+     * 18 - CH Data Sync Completed
+     * 19 - Config Pushed to Instance
+     * 27 - CH Data Sync Started
+    **/
+    $ignored_status = [18, 19, 27];
+    if(!in_array($previous_status, $ignored_status)) {
+      $dms_instance->instance_status = 17;
+      $dms_instance->setNewRevision();
+      $dms_instance->save();
+    }
     $queue = new DMSInstanceQueue($aegir_instance, Database::getConnection());
     $item = new \stdClass();
     $item->item_id = $item_id;
@@ -38,10 +48,21 @@ class ItemProcess extends ControllerBase {
       'APIKey' => 'vqkn5KNPs1mJSQZVNZptswH1YBEPujh3',
       'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
     ];
+    //check for empty fields
     foreach($body as $bodyParams) {
       if(empty($bodyParams) || $bodyParams == NULL) {
-        return true;
+        return new JsonResponse([
+          'data' => ['item deleted ' . $item_id],
+          'method' => 'GET',
+        ]);
       }
+    }
+    //check for previous status
+    if(in_array($previous_status, $ignored_status)) {
+      return new JsonResponse([
+        'data' => ['item deleted ' . $item_id],
+        'method' => 'GET',
+      ]);
     }
     try {
       $response = $httpClient->post(
