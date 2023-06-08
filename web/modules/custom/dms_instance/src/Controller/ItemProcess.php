@@ -39,7 +39,7 @@ class ItemProcess extends ControllerBase {
       'InitialLoadDays' => $dms_instance->get('sync_days')->getString(),
     ];
     foreach($body as $bodyParams) {
-      if(empty($bodyParams) || $bodyParams == NULL)
+      if(empty($bodyParams) || $bodyParams == NULL) {
         return true;
       }
     }
